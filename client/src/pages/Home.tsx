@@ -787,18 +787,34 @@ export default function Home() {
 
             {/* Key Form */}
             {loginMethod === "key" && (
-              <div className="input-group mb-6">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="7.5" cy="15.5" r="5.5" /><path d="m21 2-9.6 9.6" /><path d="m15.5 7.5 3 3L22 7l-3-3" />
-                </svg>
-                <input
-                  type="text"
-                  className="ios-input"
-                  placeholder="ROYAL-XXXX"
-                  value={accessKey}
-                  onChange={(e) => setAccessKey(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && attemptLogin()}
-                />
+              <div className="mb-6">
+                <div className="input-group mb-3">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="7.5" cy="15.5" r="5.5" /><path d="m21 2-9.6 9.6" /><path d="m15.5 7.5 3 3L22 7l-3-3" />
+                  </svg>
+                  <input
+                    type="text"
+                    className="ios-input"
+                    placeholder="ROYAL-XXXX"
+                    value={accessKey}
+                    onChange={(e) => setAccessKey(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && attemptLogin()}
+                  />
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      setAccessKey(text);
+                      toast.success("Pasted from clipboard");
+                    } catch {
+                      toast.error("Failed to paste");
+                    }
+                  }}
+                  className="w-full py-2 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/10"
+                >
+                  Paste from Clipboard
+                </button>
               </div>
             )}
 

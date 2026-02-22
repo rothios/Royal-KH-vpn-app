@@ -1,4 +1,4 @@
-import { Users, Plus, Mail, Trash2, Calendar, Bell, Zap } from "lucide-react";
+import { Users, Plus, Mail, Trash2, Calendar, Bell, Zap, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 interface Member {
@@ -155,8 +155,22 @@ export default function AdminPanel({
                       </div>
                     </div>
                     <div className="flex gap-2 flex-col">
-                      <div className="text-[9px] bg-black/40 p-2 rounded border border-white/10 font-mono text-blue-300 break-all">
-                        {member.accessKey}
+                      <div className="flex gap-2 items-center">
+                        <div className="text-[9px] bg-black/40 p-2 rounded border border-white/10 font-mono text-blue-300 break-all flex-1">
+                          {member.accessKey}
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (member.accessKey) {
+                              navigator.clipboard.writeText(member.accessKey);
+                              toast.success("Copied to clipboard");
+                            }
+                          }}
+                          className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500 hover:text-white transition-colors flex-shrink-0"
+                          title="Copy access key"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
                       </div>
                       <div className="flex gap-2">
                         <select
