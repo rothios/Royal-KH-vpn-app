@@ -17,6 +17,8 @@ interface Server {
   link: string;
   category?: string;
   createdAt: number;
+  icon?: string;
+  status?: string;
 }
 
 interface AdminPanelProps {
@@ -247,27 +249,51 @@ export default function AdminPanel({
                 placeholder="Category (optional)"
                 id="serverCategory"
               />
+              <div>
+                <label className="text-[10px] font-bold text-white/60 uppercase mb-2 block">Server Icon (optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="ios-input text-white/50 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                  id="serverIcon"
+                />
+              </div>
               <button
-                onClick={() => {
+                onClick={async () => {
                   const name = (document.getElementById("serverName") as HTMLInputElement)?.value;
                   const link = (document.getElementById("serverLink") as HTMLTextAreaElement)?.value;
                   const category = (document.getElementById("serverCategory") as HTMLInputElement)?.value;
+                  const iconFile = (document.getElementById("serverIcon") as HTMLInputElement)?.files?.[0];
+                  
                   if (!name.trim() || !link.trim()) {
                     toast.error("Name and Link required");
                     return;
                   }
+                  
+                  let icon: string | undefined = undefined;
+                  if (iconFile) {
+                    const reader = new FileReader();
+                    icon = await new Promise((resolve) => {
+                      reader.onload = (e) => resolve(e.target?.result as string);
+                      reader.readAsDataURL(iconFile);
+                    });
+                  }
+                  
                   const newServer: Server = {
                     id: Math.random().toString(36).substr(2, 9),
                     name: name.trim(),
                     link: link.trim(),
                     category: category.trim() || undefined,
                     createdAt: Date.now(),
+                    icon: icon,
+                    status: "Active",
                   };
                   onAddServer?.(newServer);
                   (document.getElementById("serverName") as HTMLInputElement).value = "";
                   (document.getElementById("serverLink") as HTMLTextAreaElement).value = "";
                   (document.getElementById("serverCategory") as HTMLInputElement).value = "";
-                  toast.success("Server added");
+                  (document.getElementById("serverIcon") as HTMLInputElement).value = "";
+                  toast.success(icon ? "Server added with icon" : "Server added");
                 }}
                 className="btn-ios-primary w-full py-3 text-sm"
               >

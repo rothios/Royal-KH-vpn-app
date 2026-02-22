@@ -91,6 +91,15 @@ interface Member {
   accessKey?: string;
 }
 
+interface Server {
+  id: string;
+  name: string;
+  link: string;
+  category?: string;
+  createdAt: number;
+  icon?: string;
+  status?: string;
+}
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const GITHUB_REPO = { owner: "sokc7618-boop", repo: "Kajabahagahbsbajajajsnanajajaj" };
@@ -274,7 +283,7 @@ export default function Home() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteExpiry, setInviteExpiry] = useState('30');
   const [adminModalOpen2, setAdminModalOpen2] = useState(false);
-  const [servers, setServers] = useState<Array<{id: string; name: string; link: string; category?: string; createdAt: number}>>([]);
+  const [servers, setServers] = useState<Array<{id: string; name: string; link: string; category?: string; createdAt: number; icon?: string; status?: string}>>([]);
 
   const t = translations[lang];
 
@@ -999,6 +1008,51 @@ export default function Home() {
                             >
                               <QrCode className="w-3 h-3" />
                             </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Servers Ready - Owner's Custom Servers */}
+                {isOwner && servers.length > 0 && (
+                  <div>
+                    <h3 className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-3 px-1">
+                      Servers Ready
+                    </h3>
+                    <div className="space-y-3">
+                      {servers.map((server) => (
+                        <div
+                          key={server.id}
+                          className="ios-card p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 border-l-4 border-l-green-500"
+                        >
+                          <div className="flex items-center gap-4">
+                            {server.icon ? (
+                              <img
+                                src={server.icon}
+                                className="w-14 h-14 rounded-2xl object-cover bg-white/10 p-1 shadow-lg"
+                                alt={server.name}
+                              />
+                            ) : (
+                              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                {server.name.charAt(0)}
+                              </div>
+                            )}
+                            <div>
+                              <h3 className="font-bold text-lg text-white leading-none mb-1">
+                                {server.name}
+                              </h3>
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                <p className="text-xs text-white/50">
+                                  Online • Ready • {server.status || "Active"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/50">
+                            <ChevronRight className="w-5 h-5" />
                           </div>
                         </div>
                       ))}
