@@ -8,6 +8,7 @@ interface Member {
   expiry: number;
   createdAt: number;
   role: 'member' | 'admin';
+  accessKey?: string;
 }
 
 interface AdminPanelProps {
@@ -153,28 +154,33 @@ export default function AdminPanel({
                         </span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <select
-                        defaultValue="0"
-                        onChange={(e) => {
-                          if (e.target.value !== "0") {
-                            onUpdateExpiry(member.id, parseInt(e.target.value));
-                            e.target.value = "0";
-                          }
-                        }}
-                        className="bg-white/10 hover:bg-white/20 text-white text-[9px] px-2 py-1 rounded-lg border border-white/10 cursor-pointer"
-                      >
-                        <option value="0">Extend</option>
-                        <option value="7">+7 Days</option>
-                        <option value="30">+30 Days</option>
-                        <option value="90">+90 Days</option>
-                      </select>
-                      <button
-                        onClick={() => onRemove(member.id)}
-                        className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    <div className="flex gap-2 flex-col">
+                      <div className="text-[9px] bg-black/40 p-2 rounded border border-white/10 font-mono text-blue-300 break-all">
+                        {member.accessKey}
+                      </div>
+                      <div className="flex gap-2">
+                        <select
+                          defaultValue="0"
+                          onChange={(e) => {
+                            if (e.target.value !== "0") {
+                              onUpdateExpiry(member.id, parseInt(e.target.value));
+                              e.target.value = "0";
+                            }
+                          }}
+                          className="bg-white/10 hover:bg-white/20 text-white text-[9px] px-2 py-1 rounded-lg border border-white/10 cursor-pointer flex-1"
+                        >
+                          <option value="0">Extend</option>
+                          <option value="7">+7 Days</option>
+                          <option value="30">+30 Days</option>
+                          <option value="90">+90 Days</option>
+                        </select>
+                        <button
+                          onClick={() => onRemove(member.id)}
+                          className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -88,6 +88,7 @@ interface Member {
   expiry: number;
   createdAt: number;
   role: 'member' | 'admin';
+  accessKey?: string;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -332,6 +333,21 @@ export default function Home() {
         const base64 = key.split("ROYAL-")[1];
         const jsonStr = decodeURIComponent(escape(atob(base64)));
         const user = JSON.parse(jsonStr) as User;
+        
+        // Check if it's a member key
+        const memberWithKey = members.find((m) => m.accessKey === key);
+        if (memberWithKey) {
+          if (Date.now() > memberWithKey.expiry) throw new Error("Key Expired");
+          const memberUser: User = {
+            name: memberWithKey.email.split("@")[0],
+            email: memberWithKey.email,
+            expiry: memberWithKey.expiry,
+            id: memberWithKey.id,
+          };
+          completeLogin(key, memberUser);
+          return;
+        }
+        
         if (user && user.expiry && user.expiry > Date.now()) {
           completeLogin(base64, user);
         } else {
@@ -340,6 +356,22 @@ export default function Home() {
       } else {
         const email = loginEmail.trim();
         if (!email) throw new Error("Please enter email");
+        
+        // Check members list first
+        const member = members.find((m) => m.email === email);
+        if (member) {
+          if (Date.now() > member.expiry) throw new Error("Account Expired");
+          const memberUser: User = {
+            name: email.split("@")[0],
+            email: email,
+            expiry: member.expiry,
+            id: member.id,
+          };
+          completeLogin(member.accessKey || "", memberUser);
+          return;
+        }
+        
+        // Fallback to GitHub users
         const res = await fetch(USERS_URL);
         if (!res.ok) throw new Error("Database Connect Failed");
         const users = await res.json();
@@ -448,6 +480,17 @@ export default function Home() {
     localStorage.setItem("apsara_members", JSON.stringify(newMembers));
   };
 
+  const generateMemberKey = (memberId: string, email: string, expiry: number) => {
+    const keyData = {
+      id: memberId,
+      email: email,
+      expiry: expiry,
+      role: "member",
+    };
+    const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(keyData))));
+    return `ROYAL-${base64}`;
+  };
+
   const inviteMember = () => {
     if (!inviteEmail.trim()) {
       toast.error("Please enter email");
@@ -462,12 +505,17 @@ export default function Home() {
       return;
     }
 
+    const memberId = Math.random().toString(36).substr(2, 9);
+    const expiryTime = Date.now() + parseInt(inviteExpiry) * 86400000;
+    const accessKey = generateMemberKey(memberId, inviteEmail, expiryTime);
+
     const newMember: Member = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: memberId,
       email: inviteEmail,
-      expiry: Date.now() + parseInt(inviteExpiry) * 86400000,
+      expiry: expiryTime,
       createdAt: Date.now(),
       role: "member",
+      accessKey: accessKey,
     };
 
     const updated = [...members, newMember];
