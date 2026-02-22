@@ -293,6 +293,10 @@ export default function Home() {
     accentColor: '#10B981',
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [editingServer, setEditingServer] = useState<{id: string; name: string; link: string; category?: string; createdAt: number; icon?: string; status?: string} | null>(null);
+  const [editServerName, setEditServerName] = useState('');
+  const [editServerLink, setEditServerLink] = useState('');
+  const [editServerIcon, setEditServerIcon] = useState<string | null>(null);
 
   const t = translations[lang];
 
@@ -1048,6 +1052,12 @@ export default function Home() {
                         <div
                           key={server.id}
                           className="ios-card p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 border-l-4 border-l-green-500"
+                          onClick={() => {
+                            setEditingServer(server);
+                            setEditServerName(server.name);
+                            setEditServerLink(server.link);
+                            setEditServerIcon(server.icon || null);
+                          }}
                         >
                           <div className="flex items-center gap-4">
                             {server.icon ? (
@@ -1630,6 +1640,108 @@ export default function Home() {
 
       {/* QR Modal */}
       <QRCodeModal text={qrText} open={qrOpen} onClose={() => setQrOpen(false)} />
+
+      {/* Edit Server Modal */}
+      {editingServer && (
+        <div className="fixed inset-0 z-[6000] bg-black/80 backdrop-blur flex items-center justify-center p-4">
+          <div className="ios-card w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-bold text-lg">Edit Server</h3>
+              <button onClick={() => setEditingServer(null)} className="text-white/50 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Server Icon Upload */}
+            <div>
+              <label className="text-xs text-white/60 block mb-2">Server Icon</label>
+              <div className="flex gap-2">
+                {editServerIcon ? (
+                  <img src={editServerIcon} className="w-12 h-12 rounded-lg object-cover" alt="icon" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-white font-bold">
+                    {editServerName.charAt(0)}
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        setEditServerIcon(event.target?.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="flex-1 text-xs text-white/50"
+                />
+              </div>
+            </div>
+
+            {/* Server Name */}
+            <div>
+              <label className="text-xs text-white/60 block mb-2">Server Name</label>
+              <input
+                type="text"
+                value={editServerName}
+                onChange={(e) => setEditServerName(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                placeholder="e.g., V2-Metfone MLBB"
+              />
+            </div>
+
+            {/* Server Link */}
+            <div>
+              <label className="text-xs text-white/60 block mb-2">Server Link/Config</label>
+              <textarea
+                value={editServerLink}
+                onChange={(e) => setEditServerLink(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 h-20 resize-none"
+                placeholder="Paste server link or config here"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-4">
+              <button
+                onClick={() => {
+                  if (editingServer && editServerName && editServerLink) {
+                    const updated = servers.map(s =>
+                      s.id === editingServer.id
+                        ? { ...s, name: editServerName, link: editServerLink, icon: editServerIcon || undefined }
+                        : s
+                    );
+                    setServers(updated);
+                    localStorage.setItem('royal_servers', JSON.stringify(updated));
+                    toast.success('Server updated');
+                    setEditingServer(null);
+                  }
+                }}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg text-sm transition"
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={() => {
+                  if (editingServer) {
+                    const updated = servers.filter(s => s.id !== editingServer.id);
+                    setServers(updated);
+                    localStorage.setItem('royal_servers', JSON.stringify(updated));
+                    toast.success('Server deleted');
+                    setEditingServer(null);
+                  }
+                }}
+                className="px-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2 rounded-lg text-sm transition"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Settings Panel */}
       <SettingsPanel
