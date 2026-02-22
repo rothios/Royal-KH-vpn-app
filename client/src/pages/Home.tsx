@@ -1520,7 +1520,7 @@ export default function Home() {
                 />
               </div>
               <h2 className="text-xl font-bold text-white">{currentUser?.name || "User"}</h2>
-              <p className="text-xs text-white/40 mt-1">Member</p>
+              <p className="text-xs text-white/40 mt-1">ADMIN WEBSITE</p>
             </div>
             {isOwner && (
               <button
