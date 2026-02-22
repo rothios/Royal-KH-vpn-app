@@ -24,8 +24,15 @@ import {
   Info,
   Shield,
   ChevronDown,
+  Settings,
+  Users,
+  Trash2,
+  Plus,
+  Mail,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
+import AdminPanel from "@/components/AdminPanel";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -72,6 +79,15 @@ interface Notification {
   title: string;
   message: string;
   date?: string;
+}
+
+interface Member {
+  id: string;
+  email: string;
+  name?: string;
+  expiry: number;
+  createdAt: number;
+  role: 'member' | 'admin';
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -219,7 +235,7 @@ export default function Home() {
   const [authStatus, setAuthStatus] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loaderVisible, setLoaderVisible] = useState(true);
-  const [activeTab, setActiveTab] = useState<"home" | "app" | "create" | "manager">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "app" | "create" | "manager" | "admin">("home");
   const [serversData, setServersData] = useState<ServersData>({});
   const [serversLoading, setServersLoading] = useState(false);
   const [accessKey, setAccessKey] = useState("");
@@ -251,6 +267,12 @@ export default function Home() {
   const [genKeyOut, setGenKeyOut] = useState("");
   const loginCardRef = useRef<HTMLDivElement>(null);
   const [proxiesLoading, setProxiesLoading] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [adminTab, setAdminTab] = useState<'members' | 'servers' | 'notifications'>('members');
+  const [members, setMembers] = useState<Member[]>([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteExpiry, setInviteExpiry] = useState('30');
+  const [adminModalOpen2, setAdminModalOpen2] = useState(false);
 
   const t = translations[lang];
 
@@ -293,6 +315,20 @@ export default function Home() {
       if (loginMethod === "key") {
         const key = accessKey.trim();
         if (!key.startsWith("ROYAL-")) throw new Error("Invalid Key Format");
+        
+        // Check if owner key
+        if (key === "ROYAL-1203") {
+          const ownerUser: User = {
+            name: "Owner",
+            email: "owner@apsara.com",
+            expiry: Date.now() + 365 * 86400000,
+            id: "owner"
+          };
+          completeLogin("owner-token", ownerUser);
+          setIsOwner(true);
+          return;
+        }
+        
         const base64 = key.split("ROYAL-")[1];
         const jsonStr = decodeURIComponent(escape(atob(base64)));
         const user = JSON.parse(jsonStr) as User;
@@ -356,6 +392,8 @@ export default function Home() {
     setCurrentUser(null);
     setProfileOpen(false);
     setActiveTab("home");
+    setIsOwner(false);
+    setMembers([]);
   };
 
   // ── App Logic ───────────────────────────────────────────────────────────────
@@ -392,6 +430,67 @@ export default function Home() {
     } catch {
       // ignore
     }
+  };
+
+  const loadMembers = () => {
+    const stored = localStorage.getItem("apsara_members");
+    if (stored) {
+      try {
+        setMembers(JSON.parse(stored));
+      } catch {
+        setMembers([]);
+      }
+    }
+  };
+
+  const saveMembers = (newMembers: Member[]) => {
+    setMembers(newMembers);
+    localStorage.setItem("apsara_members", JSON.stringify(newMembers));
+  };
+
+  const inviteMember = () => {
+    if (!inviteEmail.trim()) {
+      toast.error("Please enter email");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)) {
+      toast.error("Invalid email format");
+      return;
+    }
+    if (members.some((m) => m.email === inviteEmail)) {
+      toast.error("Member already exists");
+      return;
+    }
+
+    const newMember: Member = {
+      id: Math.random().toString(36).substr(2, 9),
+      email: inviteEmail,
+      expiry: Date.now() + parseInt(inviteExpiry) * 86400000,
+      createdAt: Date.now(),
+      role: "member",
+    };
+
+    const updated = [...members, newMember];
+    saveMembers(updated);
+    setInviteEmail("");
+    setInviteExpiry("30");
+    toast.success(`Invited ${inviteEmail}`);
+  };
+
+  const removeMember = (id: string) => {
+    const updated = members.filter((m) => m.id !== id);
+    saveMembers(updated);
+    toast.success("Member removed");
+  };
+
+  const updateMemberExpiry = (id: string, days: number) => {
+    const updated = members.map((m) =>
+      m.id === id
+        ? { ...m, expiry: Date.now() + days * 86400000 }
+        : m
+    );
+    saveMembers(updated);
+    toast.success("Expiry updated");
   };
 
   // ── Manager ─────────────────────────────────────────────────────────────────
@@ -1179,6 +1278,22 @@ export default function Home() {
                 </div>
               </div>
             )}
+
+            {/* ── ADMIN TAB ── */}
+            {activeTab === "admin" && isOwner && (
+              <AdminPanel
+                members={members}
+                inviteEmail={inviteEmail}
+                setInviteEmail={setInviteEmail}
+                inviteExpiry={inviteExpiry}
+                setInviteExpiry={setInviteExpiry}
+                onInvite={inviteMember}
+                onRemove={removeMember}
+                onUpdateExpiry={updateMemberExpiry}
+                adminTab={adminTab}
+                setAdminTab={setAdminTab}
+              />
+            )}
           </main>
 
           {/* Bottom Dock */}
@@ -1204,6 +1319,15 @@ export default function Home() {
             >
               <Zap className="w-6 h-6" />
             </button>
+            {isOwner && (
+              <button
+                onClick={() => { setActiveTab("admin"); loadMembers(); }}
+                className={`dock-item ${activeTab === "admin" ? "active" : ""}`}
+                title="Admin"
+              >
+                <Settings className="w-6 h-6" />
+              </button>
+            )}
           </nav>
         </div>
       )}
