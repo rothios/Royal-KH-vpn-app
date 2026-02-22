@@ -216,12 +216,15 @@ export default function AdminPanel({
                           <option value="30">+30 Days</option>
                           <option value="90">+90 Days</option>
                         </select>
-                        <button
-                          onClick={() => onRemove(member.id)}
-                          className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {member.accessKey && (
+                          <button
+                            onClick={() => onRemove(member.id)}
+                            className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                            title="Delete member"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -431,8 +434,15 @@ export default function AdminPanel({
           <div className="ios-card p-6">
             <h3 className="text-white font-bold mb-2 text-sm">Server Packs</h3>
             <p className="text-white/50 text-xs mb-4">Manage server packs from your repository</p>
-            <div className="text-white/40 text-xs text-center py-8">
-              Server Packs are managed through your GitHub repository. Edit the servers.json file to add or modify packs.
+            <div className="space-y-3">
+              <div className="text-white/40 text-xs text-center py-6 border border-white/10 rounded-lg">
+                Server Packs feature coming soon
+              </div>
+              <div className="text-white/50 text-xs p-3 bg-white/5 rounded-lg">
+                <p className="font-semibold mb-2">How to manage packs:</p>
+                <p>Edit your servers.json file in GitHub to add or modify packs.
+                Changes sync automatically when members refresh.</p>
+              </div>
             </div>
           </div>
         </div>

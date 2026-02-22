@@ -368,10 +368,6 @@ export default function Home() {
           return;
         }
         
-        const base64 = key.split("ROYAL-")[1];
-        const jsonStr = decodeURIComponent(escape(atob(base64)));
-        const user = JSON.parse(jsonStr) as User;
-        
         // Check if it's a member key
         const memberWithKey = members.find((m) => m.accessKey === key);
         if (memberWithKey) {
@@ -386,11 +382,7 @@ export default function Home() {
           return;
         }
         
-        if (user && user.expiry && user.expiry > Date.now()) {
-          completeLogin(base64, user);
-        } else {
-          throw new Error("Key Expired");
-        }
+        throw new Error("Invalid Key");
       } else {
         const email = loginEmail.trim();
         if (!email) throw new Error("Please enter email");
@@ -518,15 +510,10 @@ export default function Home() {
     localStorage.setItem("apsara_members", JSON.stringify(newMembers));
   };
 
-  const generateMemberKey = (memberId: string, email: string, expiry: number) => {
-    const keyData = {
-      id: memberId,
-      email: email,
-      expiry: expiry,
-      role: "member",
-    };
-    const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(keyData))));
-    return `ROYAL-${base64}`;
+  const generateMemberKey = (id: string, email: string, expiry: number) => {
+    // Generate ROYAL-XXXXX format with 5 random digits
+    const randomDigits = Math.floor(10000 + Math.random() * 90000);
+    return `ROYAL-${randomDigits}`;
   };
 
   const inviteMember = () => {
@@ -705,18 +692,8 @@ export default function Home() {
   // ── Admin Key Generator ──────────────────────────────────────────────────────
 
   const generateKey = (days: number) => {
-    const k = `ROYAL-${btoa(
-      unescape(
-        encodeURIComponent(
-          JSON.stringify({
-            expiry: Date.now() + days * 86400000,
-            created: Date.now(),
-            id: Math.random().toString(36).substr(2, 5),
-            name: "Guest",
-          })
-        )
-      )
-    )}`;
+    const randomDigits = Math.floor(10000 + Math.random() * 90000);
+    const k = `ROYAL-${randomDigits}`;
     setGenKeyOut(k);
     copyToClipboard(k, "Key Copied");
   };
