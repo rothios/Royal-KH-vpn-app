@@ -225,6 +225,64 @@ export default function AdminPanel({
       {/* Servers Tab */}
       {adminTab === "servers" && (
         <div className="space-y-4">
+          {/* Export/Import Section */}
+          <div className="ios-card p-5 bg-gradient-to-br from-green-900/20 to-blue-900/20 border-l-4 border-l-green-500">
+            <h3 className="font-bold text-white mb-4">Backup & Restore</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (servers.length === 0) {
+                    toast.error("No servers to export");
+                    return;
+                  }
+                  const dataStr = JSON.stringify(servers, null, 2);
+                  const dataBlob = new Blob([dataStr], { type: "application/json" });
+                  const url = URL.createObjectURL(dataBlob);
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = `apsara-servers-backup-${new Date().toISOString().split("T")[0]}.json`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(url);
+                  toast.success(`Exported ${servers.length} servers`);
+                }}
+                className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-400 font-bold py-2 px-3 rounded-lg text-xs border border-green-500/30 transition-colors"
+              >
+                Export JSON
+              </button>
+              <button
+                onClick={() => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = ".json";
+                  input.onchange = (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      try {
+                        const imported = JSON.parse(event.target?.result as string);
+                        if (!Array.isArray(imported)) throw new Error("Invalid format");
+                        const validServers = imported.filter((s: any) => s.id && s.name && s.link);
+                        if (validServers.length === 0) throw new Error("No valid servers found");
+                        validServers.forEach((server: Server) => onAddServer?.(server));
+                        toast.success(`Imported ${validServers.length} servers`);
+                      } catch (err) {
+                        toast.error("Invalid JSON file");
+                      }
+                    };
+                    reader.readAsText(file);
+                  };
+                  input.click();
+                }}
+                className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-bold py-2 px-3 rounded-lg text-xs border border-blue-500/30 transition-colors"
+              >
+                Import JSON
+              </button>
+            </div>
+          </div>
+
           {/* Add Server Form */}
           <div className="ios-card p-5">
             <h3 className="font-bold text-white mb-4 flex items-center gap-2">
