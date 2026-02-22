@@ -11,6 +11,14 @@ interface Member {
   accessKey?: string;
 }
 
+interface Server {
+  id: string;
+  name: string;
+  link: string;
+  category?: string;
+  createdAt: number;
+}
+
 interface AdminPanelProps {
   members: Member[];
   inviteEmail: string;
@@ -22,6 +30,10 @@ interface AdminPanelProps {
   onUpdateExpiry: (id: string, days: number) => void;
   adminTab: 'members' | 'servers' | 'notifications';
   setAdminTab: (tab: 'members' | 'servers' | 'notifications') => void;
+  servers?: Server[];
+  onAddServer?: (server: Server) => void;
+  onDeleteServer?: (id: string) => void;
+  onUpdateServer?: (id: string, server: Server) => void;
 }
 
 export default function AdminPanel({
@@ -35,6 +47,10 @@ export default function AdminPanel({
   onUpdateExpiry,
   adminTab,
   setAdminTab,
+  servers = [],
+  onAddServer,
+  onDeleteServer,
+  onUpdateServer,
 }: AdminPanelProps) {
   const formatDate = (timestamp: number) => {
     const d = new Date(timestamp);
@@ -206,8 +222,112 @@ export default function AdminPanel({
 
       {/* Servers Tab */}
       {adminTab === "servers" && (
-        <div className="ios-card p-6 text-center text-white/40 text-sm">
-          Server management coming soon...
+        <div className="space-y-4">
+          {/* Add Server Form */}
+          <div className="ios-card p-5">
+            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+              <Plus className="w-4 h-4 text-blue-400" /> Add New Server
+            </h3>
+            <div className="space-y-3">
+              <input
+                type="text"
+                className="ios-input"
+                placeholder="Server Name"
+                id="serverName"
+              />
+              <textarea
+                className="ios-input resize-none"
+                placeholder="Server Link/Config"
+                rows={3}
+                id="serverLink"
+              />
+              <input
+                type="text"
+                className="ios-input"
+                placeholder="Category (optional)"
+                id="serverCategory"
+              />
+              <button
+                onClick={() => {
+                  const name = (document.getElementById("serverName") as HTMLInputElement)?.value;
+                  const link = (document.getElementById("serverLink") as HTMLTextAreaElement)?.value;
+                  const category = (document.getElementById("serverCategory") as HTMLInputElement)?.value;
+                  if (!name.trim() || !link.trim()) {
+                    toast.error("Name and Link required");
+                    return;
+                  }
+                  const newServer: Server = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: name.trim(),
+                    link: link.trim(),
+                    category: category.trim() || undefined,
+                    createdAt: Date.now(),
+                  };
+                  onAddServer?.(newServer);
+                  (document.getElementById("serverName") as HTMLInputElement).value = "";
+                  (document.getElementById("serverLink") as HTMLTextAreaElement).value = "";
+                  (document.getElementById("serverCategory") as HTMLInputElement).value = "";
+                  toast.success("Server added");
+                }}
+                className="btn-ios-primary w-full py-3 text-sm"
+              >
+                Add Server
+              </button>
+            </div>
+          </div>
+
+          {/* Servers List */}
+          <div>
+            <h3 className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-3 px-1">
+              Total: {servers.length}
+            </h3>
+            {servers.length === 0 ? (
+              <div className="ios-card p-6 text-center text-white/40 text-xs">
+                No servers yet
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {servers.map((server) => (
+                  <div key={server.id} className="ios-card p-4 bg-black/20">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-white mb-1">{server.name}</h4>
+                        {server.category && (
+                          <p className="text-[9px] text-blue-400 mb-2">{server.category}</p>
+                        )}
+                        <p className="text-[9px] text-white/50 font-mono break-all">{server.link}</p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0 ml-2">
+                        <button
+                          onClick={() => {
+                            const newName = prompt("Edit name:", server.name);
+                            if (newName) {
+                              onUpdateServer?.(server.id, { ...server, name: newName });
+                              toast.success("Updated");
+                            }
+                          }}
+                          className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500 hover:text-white transition-colors"
+                        >
+                          <Zap className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete "${server.name}"?`)) {
+                              onDeleteServer?.(server.id);
+                              toast.success("Deleted");
+                            }
+                          }}
+                          className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

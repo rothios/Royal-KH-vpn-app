@@ -274,6 +274,7 @@ export default function Home() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteExpiry, setInviteExpiry] = useState('30');
   const [adminModalOpen2, setAdminModalOpen2] = useState(false);
+  const [servers, setServers] = useState<Array<{id: string; name: string; link: string; category?: string; createdAt: number}>>([]);
 
   const t = translations[lang];
 
@@ -327,6 +328,8 @@ export default function Home() {
           };
           completeLogin("owner-token", ownerUser);
           setIsOwner(true);
+          loadMembers();
+          loadServers();
           return;
         }
         
@@ -539,6 +542,37 @@ export default function Home() {
     );
     saveMembers(updated);
     toast.success("Expiry updated");
+  };
+
+  const loadServers = () => {
+    const stored = localStorage.getItem("apsara_servers");
+    if (stored) {
+      try {
+        setServers(JSON.parse(stored));
+      } catch {
+        setServers([]);
+      }
+    }
+  };
+
+  const saveServers = (newServers: typeof servers) => {
+    setServers(newServers);
+    localStorage.setItem("apsara_servers", JSON.stringify(newServers));
+  };
+
+  const addServer = (server: typeof servers[0]) => {
+    const updated = [...servers, server];
+    saveServers(updated);
+  };
+
+  const deleteServer = (id: string) => {
+    const updated = servers.filter((s) => s.id !== id);
+    saveServers(updated);
+  };
+
+  const updateServer = (id: string, server: typeof servers[0]) => {
+    const updated = servers.map((s) => (s.id === id ? server : s));
+    saveServers(updated);
   };
 
   // ── Manager ─────────────────────────────────────────────────────────────────
@@ -1356,6 +1390,10 @@ export default function Home() {
                 onUpdateExpiry={updateMemberExpiry}
                 adminTab={adminTab}
                 setAdminTab={setAdminTab}
+                servers={servers}
+                onAddServer={addServer}
+                onDeleteServer={deleteServer}
+                onUpdateServer={updateServer}
               />
             )}
           </main>
