@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import AdminPanel from "@/components/AdminPanel";
+import SettingsPanel from "@/components/SettingsPanel";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -284,6 +285,14 @@ export default function Home() {
   const [inviteExpiry, setInviteExpiry] = useState('30');
   const [adminModalOpen2, setAdminModalOpen2] = useState(false);
   const [servers, setServers] = useState<Array<{id: string; name: string; link: string; category?: string; createdAt: number; icon?: string; status?: string}>>([]);
+  const [websiteSettings, setWebsiteSettings] = useState({
+    name: 'ROYAL-KH VPN',
+    logo: LOGO_URL,
+    primaryColor: '#3B82F6',
+    secondaryColor: '#1E40AF',
+    accentColor: '#10B981',
+  });
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const t = translations[lang];
 
@@ -293,6 +302,19 @@ export default function Home() {
     const timer = setTimeout(() => setLoaderVisible(false), 1200);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('royal_website_settings');
+    if (saved) {
+      try {
+        setWebsiteSettings(JSON.parse(saved));
+      } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('royal_website_settings', JSON.stringify(websiteSettings));
+  }, [websiteSettings]);
 
   // ── Session Restore ─────────────────────────────────────────────────────────
 
@@ -1513,6 +1535,17 @@ export default function Home() {
               <h2 className="text-xl font-bold text-white">{currentUser?.name || "User"}</h2>
               <p className="text-xs text-white/40 mt-1">Member</p>
             </div>
+            {isOwner && (
+              <button
+                onClick={() => {
+                  setProfileOpen(false);
+                  setSettingsOpen(true);
+                }}
+                className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-purple-300 font-bold py-3 rounded-2xl text-sm flex items-center justify-center gap-2 transition-colors mb-4 border border-purple-500/30"
+              >
+                <Settings className="w-4 h-4" /> Website Settings
+              </button>
+            )}
             <div className="space-y-2 mb-6">
               <div className="bg-white/5 p-3 rounded-2xl flex justify-between items-center">
                 <span className="text-xs text-white/60 flex items-center gap-2">
@@ -1597,6 +1630,14 @@ export default function Home() {
 
       {/* QR Modal */}
       <QRCodeModal text={qrText} open={qrOpen} onClose={() => setQrOpen(false)} />
+
+      {/* Settings Panel */}
+      <SettingsPanel
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={websiteSettings}
+        onSettingsChange={setWebsiteSettings}
+      />
 
       {/* Admin Key Generator Modal */}
       {adminModalOpen && (
