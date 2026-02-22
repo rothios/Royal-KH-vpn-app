@@ -109,7 +109,7 @@ const USERS_URL = `https://raw.githubusercontent.com/${GITHUB_REPO.owner}/${GITH
 const UPDATES_URL = `https://raw.githubusercontent.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}/main/update.json`;
 const VLESS_UUID = "fc60147e-76b8-4bc5-b691-90b2da79e3d2";
 const TROJAN_UUID = "86768774-70b2-4c15-80c3-02066fb1e3b6";
-const LOGO_URL = "https://media.licdn.com/dms/image/v2/C560BAQGvTolTNZlPiw/company-logo_200_200/company-logo_200_200/0/1649062944001/apsara_protocol_logo?e=2147483647&v=beta&t=c7o2M4eUGjy_rDOvDNms6mNOS1fsBJ0v4oqJKceQhEw";
+const LOGO_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663374930964/ipoqlMYlQeWcJDkO.png";
 
 const WORKER_HOSTS = [
   "still-cell-dcbc.pvxlcvn.workers.dev",
