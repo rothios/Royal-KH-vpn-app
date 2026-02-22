@@ -279,7 +279,7 @@ export default function Home() {
   const loginCardRef = useRef<HTMLDivElement>(null);
   const [proxiesLoading, setProxiesLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
-  const [adminTab, setAdminTab] = useState<'members' | 'servers' | 'notifications'>('members');
+  const [adminTab, setAdminTab] = useState<'members' | 'servers' | 'packs' | 'notifications'>('members');
   const [members, setMembers] = useState<Member[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteExpiry, setInviteExpiry] = useState('30');

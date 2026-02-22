@@ -30,8 +30,8 @@ interface AdminPanelProps {
   onInvite: () => void;
   onRemove: (id: string) => void;
   onUpdateExpiry: (id: string, days: number) => void;
-  adminTab: 'members' | 'servers' | 'notifications';
-  setAdminTab: (tab: 'members' | 'servers' | 'notifications') => void;
+  adminTab: 'members' | 'servers' | 'packs' | 'notifications';
+  setAdminTab: (tab: 'members' | 'servers' | 'packs' | 'notifications') => void;
   servers?: Server[];
   onAddServer?: (server: Server) => void;
   onDeleteServer?: (id: string) => void;
@@ -92,6 +92,16 @@ export default function AdminPanel({
           }`}
         >
           <Zap className="w-3 h-3 inline mr-1" /> Servers
+        </button>
+        <button
+          onClick={() => setAdminTab("packs")}
+          className={`px-4 py-2 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ${
+            adminTab === "packs"
+              ? "bg-blue-500 text-white"
+              : "bg-white/10 text-white/60 hover:bg-white/20"
+          }`}
+        >
+          📦 Packs
         </button>
         <button
           onClick={() => setAdminTab("notifications")}
@@ -411,6 +421,19 @@ export default function AdminPanel({
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Server Packs Tab */}
+      {adminTab === "packs" && (
+        <div className="space-y-4">
+          <div className="ios-card p-6">
+            <h3 className="text-white font-bold mb-2 text-sm">Server Packs</h3>
+            <p className="text-white/50 text-xs mb-4">Manage server packs from your repository</p>
+            <div className="text-white/40 text-xs text-center py-8">
+              Server Packs are managed through your GitHub repository. Edit the servers.json file to add or modify packs.
+            </div>
           </div>
         </div>
       )}
